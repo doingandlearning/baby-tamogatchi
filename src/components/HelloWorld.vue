@@ -1,58 +1,116 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="tama">
+    <div class="imageContainer">
+      <img :src="imageSrc" />
+    </div>
+    <div class="buttonDiv">
+      <button @click="send('POO')">Poo</button>
+      <button @click="send('CLEAN')">Clean</button>
+      <button @click="send('YAWN')">Yawn</button>
+      <button @click="send('RUMBLE')">RUMBLE</button>
+      <button @click="send('FEED')">Feed</button>
+      <button @click="send('ROCK')">Rock</button>
+      <button @click="send('IGNORED')">Ignore</button>
+      <button @click="send('LOUDNOISE')">Loud Noise</button>
+      <button @click="send('MORNING')">Morning</button>
+    </div>
   </div>
 </template>
 
 <script>
+import { createMachine } from "xstate";
+import { useMachine } from "@xstate/vue";
+
+const babyMachine = createMachine({
+  id: "baby",
+  initial: "happy",
+  states: {
+    sleeping: {
+      on: {
+        LOUDNOISE: "crying",
+        MORNING: "happy",
+      },
+    },
+    hungry: {
+      on: {
+        FEED: "happy",
+      },
+    },
+    fulldiaper: {
+      on: {
+        CLEAN: "happy",
+      },
+    },
+    tired: {
+      on: {
+        ROCK: "sleeping",
+        IGNORED: "crying",
+      },
+    },
+    happy: {
+      on: {
+        POO: "fulldiaper",
+        YAWN: "tired",
+        RUMBLE: "hungry",
+        LOUDNOISE: "fulldiaper",
+      },
+    },
+    crying: {
+      on: {
+        ROCK: "happy",
+      },
+    },
+  },
+});
+
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  name: "HelloWorld",
+  setup() {
+    const { state, send } = useMachine(babyMachine);
+    return {
+      state,
+      send,
+    };
+  },
+  computed: {
+    imageSrc() {
+      return `/images/${this.state.value}.jpg`;
+    },
+  },
+  mounted() {
+    setTimeout(() => {
+      console.log("Sending a yawn event");
+      this.send("YAWN");
+    }, 10000);
+    setTimeout(() => {
+      console.log("Sedning a loud noise")
+      this.send("LOUDNOISE")
+    }, 10000 * Math.random())
+  },
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+img {
+  display: block;
+  width: 300px;
+  margin: auto;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.imageContainer {
+  padding-top: 150px;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+.tama {
+  margin: 0 auto;
+  background-image: url("/images/tama.png");
+  width: 400px;
+  height: 600px;
+  background-size: 400px;
+  background-repeat: no-repeat;
 }
-a {
-  color: #42b983;
+
+.buttonDiv {
+  margin-top: 300px;
 }
 </style>
